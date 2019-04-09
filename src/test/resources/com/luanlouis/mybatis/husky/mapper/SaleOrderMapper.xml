@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.luanlouis.mybatis.husky.mapper.SaleOrderMapper">
+    <insert id="insert">
+           INSERT INTO sale_order (ORDER_ID, TENANT_ID, SKU, COMMODITY_NAME, BUYER, ORDER_TIME)
+           VALUES (#{saleOrder.orderId},
+            #{saleOrder.tenantId},
+            #{saleOrder.sku},
+            #{saleOrder.commodityName},
+            #{saleOrder.buyer},now())
+    </insert>
+    <select id="selectAll" resultType="com.luanlouis.mybatis.husky.beans.SaleOrder">
+        select order_id       as orderId,
+               tenant_id      as tenantId,
+               SKU            as sku,
+               COMMODITY_NAME as commodityName,
+               BUYER          as buyer,
+               ORDER_TIME     as orderTime
+        from sale_order
+    </select>
+</mapper>
