@@ -2,7 +2,7 @@
 **MyBatis Husky** is  a lightweight and efficient table sharding middleware implemented by extending MyBatis `LanguageDriver`
 (基于MyBatis LanguageDriver 拓展实现的轻量级高效的水平分表中间件) 
 
-#### What does it do ?
+### What does it do ?
 MyBatis Husky extends MyBatis `LanguageDriver` to wrap dynamic generated SQL Statements, and then parse the SQL Statements as lexical SQL AST tree, replace the `Table` nodes according to sharding rules , then return the sharding SQL statements.
 
 Because of parsing and replacement actions happens above JDBC layer,it's transparent to JDBC layers.  
@@ -12,7 +12,9 @@ Because of parsing and replacement actions happens above JDBC layer,it's transpa
 
 
 
-#### Version
+
+
+### Version
 ```xml
 <dependency>
     <groupId>com.luanlouis</groupId>
@@ -21,7 +23,7 @@ Because of parsing and replacement actions happens above JDBC layer,it's transpa
 </dependency>
 ```
 
-#### Dependencies
+### Dependencies
 ```xml
 <dependencies>
    <dependency>
@@ -58,7 +60,7 @@ Because of parsing and replacement actions happens above JDBC layer,it's transpa
 </dependencies>
 ```
 
-#### Configuration
+### Configuration
 Step1. Download the sources,then execute maven command to install it to local repository.
 ```shell
 mvn clean install
@@ -96,5 +98,8 @@ mybatis.configuration.variables._SHARDING_CONFIG_DATASOURCE=primaryDataSource
 ```
 
 
+### Compatibility
+
+Feel free use it with `mybatis-pagehelper`,`sharding sphere` and `seata`
 
 

@@ -14,27 +14,24 @@ import com.luanlouis.mybatis.sharding.Constants;
 import com.luanlouis.mybatis.sharding.strategy.DataSourceBasedShardingTableStrategy;
 import com.luanlouis.mybatis.sharding.strategy.ShardingTableStrategy;
 import com.luanlouis.spring.boot.SpringContext;
-import javafx.application.Application;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.parsing.XNode;
+import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.scripting.xmltags.OgnlCache;
 import org.apache.ibatis.scripting.xmltags.XMLLanguageDriver;
 import org.apache.ibatis.session.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static com.luanlouis.mybatis.sharding.Constants.DEFAULT_IDENTIFIER_KEY;
 import static com.luanlouis.mybatis.sharding.Constants.MyBatisVariables.*;
@@ -145,7 +142,7 @@ public class ShardingXmlLanguageDriver extends XMLLanguageDriver {
                     identifier = String.valueOf(value.keySet().toArray()[0]);
                 }
             } catch (Exception e) {
-                log.error("extracting sharding identifier failed!", e);
+                log.debug("extracting sharding identifier failed,returning original boundsql!");
                 return result;
             }
 
@@ -169,13 +166,34 @@ public class ShardingXmlLanguageDriver extends XMLLanguageDriver {
 
         private String replacedSql;
 
-        private String tenantId;
+        private  Map<String, Object> additionalParameters;
+
+        private  MetaObject metaParameters;
+
+        private  List<ParameterMapping> parameterMappings;
+        private  Object parameterObject;
 
 
         RoutingBoundSql(BoundSql delegate, String replacedSql) {
             super(configuration, null, delegate.getParameterMappings(), delegate.getParameterObject());
+            this.parameterMappings = delegate.getParameterMappings();
+            this.parameterObject = delegate.getParameterObject();
+            this.additionalParameters = new HashMap<>();
+
             this.delegate = delegate;
             this.replacedSql = replacedSql;
+            try {
+                Field additionalParametersField = BoundSql.class.getDeclaredField("additionalParameters");
+                additionalParametersField.setAccessible(true);
+                this.additionalParameters = (Map<String, Object>) additionalParametersField.get(delegate);
+                Field metaParametersField = BoundSql.class.getDeclaredField("metaParameters");
+                metaParametersField.setAccessible(true);
+                this.metaParameters = (MetaObject) metaParametersField.get(delegate);
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
@@ -188,12 +206,12 @@ public class ShardingXmlLanguageDriver extends XMLLanguageDriver {
 
         @Override
         public List<ParameterMapping> getParameterMappings() {
-            return delegate.getParameterMappings();
+            return parameterMappings;
         }
 
         @Override
         public Object getParameterObject() {
-            return delegate.getParameterObject();
+            return parameterObject;
         }
 
         @Override

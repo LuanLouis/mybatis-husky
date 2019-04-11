@@ -10,6 +10,8 @@ import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlOutputVisitor;
 import com.alibaba.druid.sql.visitor.SQLASTOutputVisitor;
 import com.alibaba.druid.util.JdbcConstants;
 import com.alibaba.druid.util.StringUtils;
+import com.luanlouis.jdbc.instropect.IntrospectUtils;
+import com.luanlouis.jdbc.instropect.TableMetaData;
 import com.luanlouis.mybatis.husky.TestBootApplication;
 import com.luanlouis.mybatis.husky.mapper.SaleOrderMapper;
 import com.luanlouis.mybatis.sharding.strategy.DataSourceBasedShardingTableStrategy;
@@ -21,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -44,13 +47,16 @@ public class ShardingTest {
     private SaleOrderMapper saleOrderMapper;
 
     @Test
-    public void test(){
+    public void test() throws SQLException {
 
         DataSourceBasedShardingTableStrategy dataSourceBasedShardingTableStrategy = new DataSourceBasedShardingTableStrategy(this.dataSource);
         dataSourceBasedShardingTableStrategy.route("T_TMP_USER_LIST","000000000012");
-
-
+        TableMetaData tableMetaData = IntrospectUtils.introspect("SALE_ORDER",this.dataSource);
+        System.out.println(tableMetaData.getCreateTableSql());
+        System.out.println(tableMetaData.getIndexSql());
     }
+
+
 
     @Test(expected = Exception.class)
     public void test3(){

@@ -1,11 +1,9 @@
 package com.luanlouis.mybatis.sharding.strategy;
 
-import com.luanlouis.mybatis.sharding.Constants;
 import com.luanlouis.mybatis.sharding.drivers.ShardingRule;
 import com.luanlouis.spring.boot.SpringContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import javax.sql.DataSource;
@@ -18,9 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-import static com.luanlouis.mybatis.sharding.Constants.ShardingRule.CUSTOMIZED;
-import static com.luanlouis.mybatis.sharding.Constants.ShardingRule.DYNAMIC;
-import static com.luanlouis.mybatis.sharding.Constants.ShardingRule.STATIC;
+import static com.luanlouis.mybatis.sharding.Constants.ShardingRule.*;
 
 /**
  * 功能描述:
@@ -56,7 +52,7 @@ public class DataSourceBasedShardingTableStrategy implements ShardingTableStrate
                 ShardingRule shardingRule = new ShardingRule();
                 shardingRule.setShardingId(resultSet.getInt("SHARDING_ID"));
                 shardingRule.setShardingName(resultSet.getString("SHARDING_NAME"));
-                shardingRule.setTableName(resultSet.getString("TABLE_NAME"));
+                shardingRule.setTableName(resultSet.getString("TABLE_NAME").toUpperCase());
                 shardingRule.setStrategy(resultSet.getInt("STRATEGY"));
                 shardingRule.setExpression(resultSet.getString("EXPRESSION"));
                 shardingRule.setDelimiter(resultSet.getString("DELIMITER"));
@@ -99,7 +95,7 @@ public class DataSourceBasedShardingTableStrategy implements ShardingTableStrate
      */
     @Override
     public String route(String oldTableName, String identifier) {
-        List<ShardingRule> shardingRules = sortedShardingMap.get(oldTableName);
+        List<ShardingRule> shardingRules = sortedShardingMap.get(oldTableName.toUpperCase());
         if (null == shardingRules || shardingRules.isEmpty()) {
             return oldTableName;
         }
@@ -121,6 +117,16 @@ public class DataSourceBasedShardingTableStrategy implements ShardingTableStrate
                 newTableName = instance.getCustomImplInstance().route(oldTableName, identifier);
         }
         logger.debug("table {} is sharded as new name {} using sharding rule:{}", oldTableName, newTableName, instance);
+//      TODO: 通过元数据检索，反查初
+//        if(!StringUtils.equals(newTableName,oldTableName)){
+//            try {
+//                TableMetaData tableMetaData = IntrospectUtils.introspect(oldTableName,this.dataSource);
+//                String tableSql = tableMetaData.copyTableSql(newTableName);
+//                boolean result = this.dataSource.getConnection().prepareStatement(tableSql).execute();
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//        }
         return newTableName;
     }
 }

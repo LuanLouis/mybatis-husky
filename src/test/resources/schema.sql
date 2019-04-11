@@ -1,4 +1,4 @@
-
+drop table if exists t_sharding_table;
 create table if not exists t_sharding_table
 (
 	SHARDING_ID int auto_increment primary key,
@@ -12,13 +12,19 @@ create table if not exists t_sharding_table
 	PRECEDENCE int null comment '匹配优先级，值越小，标识优先级越大'
 );
 
+drop table if exists sale_order;
 create table if not exists sale_order
 (
-	ORDER_ID varchar(20) null comment '订单号',
+	ORDER_ID varchar(20)  not null primary key ,
 	TENANT_ID varchar(10) null comment '租户编号',
 	SKU varchar(40) null comment '商品SKU编码',
 	COMMODITY_NAME varchar(200) null comment '商品名称',
 	BUYER varchar(100) null comment '购买者',
-	ORDER_TIME datetime(6) null comment '下单时间'
+	ORDER_TIME datetime(6) null comment '下单时间',
+	AMOUNT decimal(6,3) null comment '金额'
 )
 ;
+
+COMMENT ON TABLE sale_order IS '销售订单表';
+
+CREATE INDEX idx_sale_order ON sale_order(ORDER_ID,BUYER);
